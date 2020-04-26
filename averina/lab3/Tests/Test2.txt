@@ -1,0 +1,9 @@
+6
+a
+e
+a b 1
+a c 2
+c b 2
+c d 3
+d e 3
+b e 3
