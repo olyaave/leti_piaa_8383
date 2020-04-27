@@ -24,7 +24,7 @@ class flowSearch {
     };
 
     unordered_map<char, vector<point>>  network;  // остаточная сеть
-    unordered_map<char, vector<point>> invertNetwork;
+    unordered_map<char, vector<point>> invertNetwork;  // останочная сеть обратных ребер
 
     char start, finish;
 
@@ -37,21 +37,23 @@ class flowSearch {
         unordered_map<char, bool> checked;
         checked[start] = true;
 
-        while(currentPoint != finish){
+        while(currentPoint != finish){  // Поиск потока
 
             std::cout <<"Vertex: " <<currentPoint << "\n";
             maxFlow = -1;
-            for (auto it : network[currentPoint]) {
+            for (auto it : network[currentPoint])   // Перебор всех смежных ребер и поиск максимального
+            {
                 if (!checked[it.vertex] && it.way > 0 && maxFlow < it.way) {
-//                if (!checked[it.vertex] && it.way > 0) {
+//                if (!checked[it.vertex] && it.way > 0) {  // условие для степика
                     newPoint = it.vertex;
                     maxFlow = it.way;
                     isInvertEdge = false;
                 }
             }
-            for (auto it : invertNetwork[currentPoint]) {
+            for (auto it : invertNetwork[currentPoint])  // Перебор всех смежных ребер и поиск максимального
+            {
                 if (!checked[it.vertex] && it.way > 0 && maxFlow < it.way) {
-//                if (!checked[it.vertex] && it.way > 0) {
+//                if (!checked[it.vertex] && it.way > 0) {  // условие для степика
                     newPoint = it.vertex;
                     maxFlow = it.way;
                     isInvertEdge = true;
@@ -60,22 +62,22 @@ class flowSearch {
             currentPoint = newPoint;
             checked[currentPoint] = true;
 
-            if (maxFlow == -1) {
+            if (maxFlow == -1) {  // если не найдено ни одного свободного смежного ребра
                 way->pop_back();
-                if(way->empty())  return 0;
-
+                if(way->empty())  return 0;  // если нет свободный ребер из истока
+                                            // - найден максимальный поток
                 currentPoint = way->back().first;
                 continue;
             }
 
             way->push_back({currentPoint, isInvertEdge});
 
-            if (maxFlow < minResFlow)
+            if (maxFlow < minResFlow)  // обновление минимальной пропускной способности
                 minResFlow = maxFlow;
         }
         return minResFlow;
     }
-
+    // компаратор для сортировки ребер для вывода
     static int comp(edge x, edge y) {
         if(x.from <= y.from)
             return x.to < y.to;
@@ -83,12 +85,13 @@ class flowSearch {
             return x.from < y.from;
     }
 
+
     void sortOutput(int flowValue) {
 
         cout << flowValue << endl;
 
         vector<edge> answer;
-        for (auto u: invertNetwork)
+        for (auto u: invertNetwork)  // запись ребер и их фактических потоков
         {
             for (auto it: invertNetwork[u.first]) {
                 answer.push_back({it.vertex, u.first, it.way});
@@ -130,7 +133,8 @@ public:
         while (!way.empty()) {
 
             minResFlow = searchPath(&way);  // поиск потока
-            if(way.size() > 1) {
+
+            if(way.size() > 1) {  // если найден поток
 
                 cout << "\nFlow is finding: \n";
                 for (auto it : way) {
@@ -139,11 +143,11 @@ public:
 
                 vector<point> *list;
                 vector<point> *invertList;
-                for (auto u = way.begin(); u != (way.end() - 1); ++u)//  вершина u - "из"
+                for (auto u = way.begin(); u != (way.end() - 1); ++u) // перебор вершин пути
                 {
                     cout << "\n\nFrom " << u->first << " to " << (u + 1)->first << endl;
                     if (!(u + 1)->second) {
-                        list = &network[u->first];
+                        list = &network[u->first];  // определение, какому списку смежности принадлежит ребро
                         invertList = &invertNetwork[(u + 1)->first];
                     } else {
                         list = &invertNetwork[u->first];
@@ -152,14 +156,14 @@ public:
                     for (auto &it: *list) {
                         if (it.vertex == (u + 1)->first) {
                             cout <<u->first<< " - "<<(u + 1)->first<<": "<<it.way<<" - "<<minResFlow<<" = ";
-                            it.way -= minResFlow;
+                            it.way -= minResFlow;  // Изменение пропускной способности ребра
                             cout << it.way << endl;
                         }
                     }
                     for (auto &it: *invertList) {
                         if (it.vertex == u->first) {
                             cout <<(u + 1)->first<<" - "<<u->first<<": "<<it.way<<" + "<<minResFlow<<" = ";
-                            it.way += minResFlow;
+                            it.way += minResFlow;  // Изменение пропускной способности обратного ребра
                             cout << it.way << endl;
                         }
                     }
@@ -167,7 +171,7 @@ public:
                 way.clear();
                 way.push_back({start, 0});
                 cout << "\n";
-                flowValue += minResFlow;
+                flowValue += minResFlow;  // увеличение максимального потока
             } else
                 way.clear();
         }
