@@ -1,11 +1,9 @@
+#include <iostream>
 #include <vector>
 #include <stack>
-#include <iostream>
 #include <unordered_map>
 #include <fstream>
 #include <algorithm>
-
-#define DEBUG
 
 // Вар. 5. Поиск не в глубину и не в ширину, а по правилу: каждый раз выполняется переход по дуге,
 // имеющей максимальную остаточную пропускную способность. Если таких дуг несколько, то выбрать ту,
@@ -16,10 +14,12 @@ using namespace std;
 class flowSearch {
 
     struct point {
-        char vertex; int way;
+        char vertex;
+        int way;
     };
     struct edge {
-        char from, to;
+        char from;
+        char to;
         int flow;
     };
 
@@ -62,10 +62,8 @@ class flowSearch {
 
             if (maxFlow == -1) {
                 way->pop_back();
-                if(way->empty())  {
-                  cout << "There are no more paths from the source!\n\n";
-                  return 0;
-                }
+                if(way->empty())  return 0;
+
                 currentPoint = way->back().first;
                 continue;
             }
@@ -78,14 +76,34 @@ class flowSearch {
         return minResFlow;
     }
 
-    static int comp1(edge x, edge y) {
-        return x.from < y.from;
-    }
-    static int comp2(edge x, edge y) {
-        return x.to < y.to;
+    static int comp(edge x, edge y) {
+        if(x.from <= y.from)
+            return x.to < y.to;
+        else
+            return x.from < y.from;
     }
 
+    void sortOutput(int flowValue) {
+
+        cout << flowValue << endl;
+
+        vector<edge> answer;
+        for (auto u: invertNetwork)
+        {
+            for (auto it: invertNetwork[u.first]) {
+                answer.push_back({it.vertex, u.first, it.way});
+            }
+        }
+
+        sort(answer.begin(), answer.end(), comp);
+        for (auto it: answer) {
+            cout << it.from << " " << it.to << " " << it.flow << endl;
+        }
+    }
+
+
 public:
+
     explicit flowSearch(): start(' '), finish(' ') {}
 
     void inputGraphConsole() {
@@ -99,28 +117,6 @@ public:
             network[from].push_back({to, way_});
             invertNetwork[to].push_back({from, 0});
         }
-    }
-
-    int inputGraph() {
-        char from, to;
-        int way_, n;
-        ifstream file;
-        file.open("/home/olyaave/CLionProjects/PAA_LAB3_2/input.txt");
-        if (file.is_open()) {
-
-            file >> n >> start >> finish;
-            for (int i = 0; i < n; ++i) {
-                file >> from >> to >> way_; // from - из, to - в
-
-                network[from].push_back({to, way_});
-                invertNetwork[to].push_back({from, 0});
-            }
-            file.close();
-        } else {
-            cout << "File isn't open!";
-            return -1;
-        }
-        return 0;
     }
 
     void networks() {
@@ -150,7 +146,6 @@ public:
                         list = &network[u->first];
                         invertList = &invertNetwork[(u + 1)->first];
                     } else {
-//                        cout << "Invert ->>>>>\n";
                         list = &invertNetwork[u->first];
                         invertList = &network[(u + 1)->first];
                     }
@@ -179,24 +174,6 @@ public:
         sortOutput(flowValue);
     }
 
-
-    void sortOutput(int flowValue) {
-        cout << "Answer: " << endl;
-        cout << "\n" << flowValue << endl;
-
-        vector<edge> answer;
-        for (auto u: invertNetwork)
-        {
-            for (auto it: invertNetwork[u.first]) {
-                answer.push_back({it.vertex, u.first, it.way});
-            }
-        }
-        sort(answer.begin(), answer.end(), comp2);
-        sort(answer.begin(), answer.end(), comp1);
-        for (auto it: answer) {
-            cout << it.from << " " << it.to << " " << it.flow << endl;
-        }
-    }
 };
 
 int main() {
