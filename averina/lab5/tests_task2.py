@@ -1,6 +1,6 @@
 import os
 
-DIRECTORY = "Tests"
+DIRECTORY = "Tests2"
 
 tests = os.listdir(DIRECTORY)
 
@@ -9,4 +9,4 @@ for i in range(len(tests)):
     print()
     print("Test ", i+1, ":   ", testPath, sep="")
     print(*open(testPath, "r").readlines(), sep="")
-    os.system("./test < ./" + testPath)
+    os.system("./test_2 < ./" + testPath)
